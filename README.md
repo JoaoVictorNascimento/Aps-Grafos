@@ -1,1 +1,6 @@
-# Aps-Grafos
+# requisitos
+
+    - spotipy
+# usage
+
+    - python main.py
