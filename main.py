@@ -23,6 +23,46 @@ def main():
     #graph.artist_top_tracks()
     #graph.print()
 
+class ToObject:
+    def __init__(self, dictionary):
+        if isinstance(dictionary, str) or not dictionary:
+            pass
+        else:
+            if not isinstance(dictionary, str):
+                for i in dictionary.keys():
+                    if isinstance(dictionary[i], dict):
+                        self.add(i, dictionary[i])
+                    elif isinstance(dictionary[i], list):
+                        self.addlist(i, dictionary[i])
+                    else:
+                        self[i] = dictionary[i]
+
+    def __setitem__(self, key, value):
+        super().__setattr__(key, value)
+
+    def __getitem__(self, item):
+        return super().__getattribute__(item)
+
+    def add(self, key, value):
+        self[key] = ToObject(value)
+
+    def addlist(self, key, value):
+        list = []
+        for i in value:
+            list.append(ToObject(i))
+        self[key] = list
+
+    def print(self, hash=''):
+        for i in self.__dict__:
+            if isinstance(self[i], list):
+                print(i, ':')
+                for j in self[i]:
+                    j.print(hash + '-')
+            if isinstance(self[i], ToObject):
+                print(i, ':')
+                self[i].print(hash + '-')
+            else:
+                print(hash, i, ':', self[i])
 
 class Graph:
     Client_ID = 'c1ba30fe3be544b9beaf1ddff027a0b7'
@@ -37,7 +77,7 @@ class Graph:
         self.result = []
         self.listartist = []
 
-    def search(self, q='artist:', type='artist', search=None):
+    def search(self, q=':', type='artist', search=None):
         self.type = type + 's'
         self.result = self.spotify.search(q=q + search, type=type)
 
@@ -87,7 +127,8 @@ class Graph:
     def artist(self):
         art = sys.argv[1:]
         for i in art:
-            artist = self.search(search=i)
+            artist = ToObject(self.search(search=i))
+            print(artist)
         return art
 
     def __str__(self):
