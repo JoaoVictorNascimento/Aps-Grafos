@@ -7,14 +7,16 @@ import time
 
 def main():
     graph = Graph()
-    graph.artist()
-    print(graph.artist())
-    
+    # graph.artist()
+    # print(graph.artist())
+    #
 
     # exemplo busca por cantor
-    #graph.search(search="Metallica", q='',type='artist')
+    graph.search(search="Metallica", q='',type='album')
+    # print(asd)
     #graph.print(graph.result,'artists')
-    #print(graph.get_artist(graph.result))
+    asd = ToObject(graph.get_artist(graph.result))
+    asd.print()
     
     # print(graph.result)
     # carregar album
@@ -77,7 +79,7 @@ class Graph:
         self.result = []
         self.listartist = []
 
-    def search(self, q=':', type='artist', search=None):
+    def search(self, q=':', type='track', search=None):
         self.type = type + 's'
         self.result = self.spotify.search(q=q + search, type=type)
 
