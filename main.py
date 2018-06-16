@@ -4,19 +4,29 @@ import sys
 import json
 import spotipy
 import time
+from functools import reduce
 
 def main():
     graph = Graph()
-    # graph.artist()
-    # print(graph.artist())
-    #
+    #val = graph.artist()
+    #print(val[1]['id'])
+    val = graph.artist_top_tracks()
+    print(val)
+    # test = []
+    # for i in val:
+    #     # print (i.keys())
+    #     test.append(i['tracks'])
+    # z = reduce(lambda a,b: a+b, test)
 
+
+    
     # exemplo busca por cantor
-    graph.search(search="Metallica", q='',type='album')
-    # print(asd)
+    #val = graph.search(search="Metallica", q='',type='artist')
+    #print(val['artists']['items'][0].print())
+    
     #graph.print(graph.result,'artists')
-    asd = ToObject(graph.get_artist(graph.result))
-    asd.print()
+    #asd = ToObject(graph.get_artist(graph.result))
+    #asd.print()
     
     # print(graph.result)
     # carregar album
@@ -48,6 +58,9 @@ class ToObject:
     def add(self, key, value):
         self[key] = ToObject(value)
 
+    def keys(self):
+        return self.__dict__
+
     def addlist(self, key, value):
         list = []
         for i in value:
@@ -77,11 +90,11 @@ class Graph:
         self.type = ''
         self.spotify = spotipy.Spotify(client_credentials_manager=self.token)
         self.result = []
-        self.listartist = []
-
-    def search(self, q=':', type='track', search=None):
+    
+    def search(self, q='', type='track', search=None):
         self.type = type + 's'
-        self.result = self.spotify.search(q=q + search, type=type)
+        objsearch = self.spotify.search(q=q + search, type=type)
+        return ToObject(objsearch)
 
     def get_artist(self,art):
         artist = art
@@ -112,10 +125,21 @@ class Graph:
     def keys(self):
         return self.result[self.type]['items'][0].keys()
     
+    # retorna uma lista com as 10 musicas mais populares de cada artista
     def artist_top_tracks(self):
-        tracks=[]
         # self.results = top_tracks(self.get_artist()['id'])
-        self.print(self.spotify.artist_top_tracks(self.get_artist()['id']), 'tracks')
+        artists = self.artist()
+        top_tracks = []
+        tracks = []
+        for i in artists:
+            top_tracks.append(ToObject(self.spotify.artist_top_tracks(i['id']))) 
+    
+        for i in top_tracks:
+            tracks.append(i['tracks'])
+        
+        track = reduce(lambda a,b: a+b, tracks)
+
+        return track
     
     def print(self, objet=None, type=None):
         data = objet[type]
@@ -128,10 +152,15 @@ class Graph:
     
     def artist(self):
         art = sys.argv[1:]
+        listartist = []
+        
         for i in art:
-            artist = ToObject(self.search(search=i))
-            print(artist)
-        return art
+            artist = self.search(search=i, q='', type='artist')
+            listartist.append(self.get_artist(artist))
+        
+        return listartist
+    
+
 
     def __str__(self):
         return len(self.result)
