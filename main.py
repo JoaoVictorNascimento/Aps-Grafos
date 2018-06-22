@@ -5,25 +5,36 @@ import json
 import spotipy
 import time
 from functools import reduce
+from Object import *
 
 def main():
     graph = Graph()
     #val = graph.artist()
     #print(val[1]['id'])
-    val = graph.artist_top_tracks()
-    print(val)
-    # test = []
-    # for i in val:
-    #     # print (i.keys())
-    #     test.append(i['tracks'])
+    val = graph.playlist()
+
+    #print(val)
+    for i in val:
+        playlist = i.simplify()
+        print(playlist)
+   
+    
+    #      test.append(i['tracks'])
     # z = reduce(lambda a,b: a+b, test)
 
 
     
     # exemplo busca por cantor
-    #val = graph.search(search="Metallica", q='',type='artist')
-    #print(val['artists']['items'][0].print())
     
+    # val = graph.search(search="Alok", q='', limit=20, type='playlist')
+    #var2 = val['playlists']['items'] 
+   
+    #for i in var2:
+    #    print(i['name'])
+    
+    #      test.append(i['tracks'])
+    # z = reduce(lambda a,b: a+b, test)
+
     #graph.print(graph.result,'artists')
     #asd = ToObject(graph.get_artist(graph.result))
     #asd.print()
@@ -34,50 +45,6 @@ def main():
 
     #graph.artist_top_tracks()
     #graph.print()
-
-class ToObject:
-    def __init__(self, dictionary):
-        if isinstance(dictionary, str) or not dictionary:
-            pass
-        else:
-            if not isinstance(dictionary, str):
-                for i in dictionary.keys():
-                    if isinstance(dictionary[i], dict):
-                        self.add(i, dictionary[i])
-                    elif isinstance(dictionary[i], list):
-                        self.addlist(i, dictionary[i])
-                    else:
-                        self[i] = dictionary[i]
-
-    def __setitem__(self, key, value):
-        super().__setattr__(key, value)
-
-    def __getitem__(self, item):
-        return super().__getattribute__(item)
-
-    def add(self, key, value):
-        self[key] = ToObject(value)
-
-    def keys(self):
-        return self.__dict__
-
-    def addlist(self, key, value):
-        list = []
-        for i in value:
-            list.append(ToObject(i))
-        self[key] = list
-
-    def print(self, hash=''):
-        for i in self.__dict__:
-            if isinstance(self[i], list):
-                print(i, ':')
-                for j in self[i]:
-                    j.print(hash + '-')
-            if isinstance(self[i], ToObject):
-                print(i, ':')
-                self[i].print(hash + '-')
-            else:
-                print(hash, i, ':', self[i])
 
 class Graph:
     Client_ID = 'c1ba30fe3be544b9beaf1ddff027a0b7'
@@ -91,10 +58,22 @@ class Graph:
         self.spotify = spotipy.Spotify(client_credentials_manager=self.token)
         self.result = []
     
-    def search(self, q='', type='track', search=None):
+    # Search
+    def search(self, q='', type='track', search=None, limit=10):
         self.type = type + 's'
-        objsearch = self.spotify.search(q=q + search, type=type)
+        objsearch = self.spotify.search(q=q + search, type=type, limit=limit)
         return ToObject(objsearch)
+
+    # Artist
+    def artist(self):
+        art = sys.argv[1:]
+        listartist = []
+        
+        for i in art:
+            artist = self.search(search=i, q='', type='artist')
+            listartist.append(self.get_artist(artist))
+        
+        return listartist
 
     def get_artist(self,art):
         artist = art
@@ -104,6 +83,7 @@ class Graph:
         else:
             return None
 
+    #Album
     def show_artist_albums(self):
         albums = []
         results = self.spotify.artist_albums(self.get_artist()['id'], album_type='album')
@@ -119,12 +99,8 @@ class Graph:
                 print((' ' + name))
                 seen.add(name)
 
-    def load(self):
-        return list(self.result[self.type]['items'])
-
-    def keys(self):
-        return self.result[self.type]['items'][0].keys()
     
+    #Track
     # retorna uma lista com as 10 musicas mais populares de cada artista
     def artist_top_tracks(self):
         # self.results = top_tracks(self.get_artist()['id'])
@@ -141,6 +117,21 @@ class Graph:
 
         return track
     
+    def playlist(self):
+        tracks = self.artist_top_tracks()
+        
+        music = []
+        for i in tracks:
+            for j in self.search(search=ToObject(i)['name'], q='', limit=3, type='playlist')['playlists']['items']:
+                music.append(ToObject.factory(type='Playlist', dictionary=j))
+
+        return music
+
+    
+         
+
+
+    #Utils
     def print(self, objet=None, type=None):
         data = objet[type]
         # print(data.keys())
@@ -150,15 +141,12 @@ class Graph:
             for i in x.keys():
                 print(i,x[i])
     
-    def artist(self):
-        art = sys.argv[1:]
-        listartist = []
-        
-        for i in art:
-            artist = self.search(search=i, q='', type='artist')
-            listartist.append(self.get_artist(artist))
-        
-        return listartist
+    
+    def load(self):
+        return list(self.result[self.type]['items'])
+
+    def keys(self):
+        return self.result[self.type]['items'][0].keys()
     
 
 
