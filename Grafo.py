@@ -8,7 +8,7 @@
 #   - Gabriel Choptian
 # Arquivos editados:
 #   - data: [data] função: [função/ classe]
-#   nada
+#   22/06 - addEdge
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -25,10 +25,7 @@ class Graph:
         self.G.remove_node(node)
 
     def addEdge(self, node1, node2, weight=None):
-        if (weight == None):
-            self.G.add_edge(node1, node2)
-        else:
-            self.G.add_edge(node1, node2, weight=float(weight))
+        self.G.add_edge(node1, node2, weight=weight)
 
     def getEdgeWeight(self, node1, node2):
         return self.G[node1][node2]['weight']

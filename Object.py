@@ -15,6 +15,15 @@ class ToObject:
     def __setitem__(self, key, value):
         super().__setattr__(key, value)
 
+    def __str__(self):
+        keys = self.keys()
+        if keys.__contains__('name'):
+            return self['name']
+        else:
+            print(keys)
+            return "NUM deu"
+            # return self
+
     def __getitem__(self, item):
         return super().__getattribute__(item)
 
@@ -84,7 +93,11 @@ class SimpleObject:
         print("----------")
 
     def __str__(self):
-        return 'Music: ' + self['name']
+        keys = self.keys()
+        if keys.__contains__('name'):
+            return self['name']
+        else:
+            return self[keys[0]]
 
 
 class Playlist(ToObject):
@@ -98,6 +111,13 @@ class Playlist(ToObject):
         for j in owner:
             playlist.add('owner' + "_" + j, self['owner'][j])
         return playlist
+
+    def __str__(self):
+        keys = self.keys()
+        if keys.__contains__('name'):
+            return self['name']
+        else:
+            return self[keys[0]]
 
     def print(self, hash=''):
         self.simplify().print()
