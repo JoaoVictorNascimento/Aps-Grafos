@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import sys
 import json
 import time
+from math import log
 from functools import reduce
 from Object import *
 from Grafo import Graph
@@ -12,18 +13,9 @@ from Grafo import Graph
 def main():
     graph = SpotList()
 
-    #graph.relation()
 
-    s = "teste passoca";
-    s1 = "w";
-    val = s.index(s1)
-    print(val)
-    #for i in val:
-    #    print("\n")
-    #    for j in i:
-    #        print(j['name'])
-
-
+    var = graph.relation()
+ 
 class SpotList:
     Client_ID = 'c1ba30fe3be544b9beaf1ddff027a0b7'
     Client_Secret = 'f471043ef395448ebcbab4c18a231980'
@@ -104,12 +96,37 @@ class SpotList:
 
         return music
 
-    def filter(self, name):
-        a = name
-        if name.find('(') > 0:
-            a = name[0:name.find('(')]
-        a = re.sub(r'([uU]+(.)?\s)', '', a)
-        return a
+    def contain_list(self,playlist, music_A, music_B):
+        flagA = False
+        flagB = False
+        
+        if(music_A['name'] == music_B['name']):
+            return False
+
+        for i in playlist:
+            try:
+                val = i['name'].index(music_A['name'])
+                
+                if val >= 0 :
+                    flagA = True
+            except ValueError:
+                 pass
+
+            try:
+                val1 = i['name'].index(music_B['name'])
+                if val1 >= 0 :
+                    flagB = True
+            except ValueError:
+                 pass
+        
+        if (flagA == flagB) == True :
+            return True
+        
+        else:
+            return False
+
+    
+
 
     def relation(self):
         playlist = self.playlist()
@@ -127,17 +144,29 @@ class SpotList:
                 test.append(ToObject.factory('Track', j['track']))
 
             playlist_music_name.append(test)
-            test =[]
+            test = []
 
+        arest = 0
 
-        for i in music:
-             for j in music:
-                 for k in playlist_music_name:
-                     pass
+        for music_a in music:
+            for music_b in music:
+                for playlist_music in playlist_music_name:
+                    if self.contain_list(playlist_music,music_a,music_b) :
+                        arest += 1
 
+                if arest > len(playlist_music_name)*(0.98+(log(len(playlist_music_name),60)/100)):
+                    self.mygraph.addNode(music_a['name'])
+                    self.mygraph.addNode(music_b['name'])
+                    self.mygraph.addEdge(music_a['name'],music_b['name'], arest)
 
+                arest = 0
+        
+        self.mygraph.display()
+        # print(self.mygraph.getEdges())
 
-        return playlist_music_name
+        return arest
+
+       
 
     # Utils
     def print(self, objet=None, type=None):
